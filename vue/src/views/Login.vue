@@ -3,7 +3,8 @@
     <div class="video-container">
       <div :style="fixStyle" class="filter">
         <div style="width: 400px; margin: 100px auto">
-          <div style="font-size: 30px; text-align: center; padding: 30px 0; color: #333">请登录</div>
+          <div style="font-size: 20px; text-align: center; padding: 20px 0; color: dodgerblue">CodeFlyer Quantitative Trading System</div>
+          <div style="font-size: 30px; text-align: center; padding: 20px 0; color: #333">请登录</div>
           <el-form ref="form" :model="form" size="normal" :rules="rules">
             <el-form-item prop="username">
               <el-input prefix-icon="el-icon-user-solid" v-model="form.username" placeholder="请输入账号"></el-input>
@@ -129,7 +130,7 @@ export default {
               sessionStorage.setItem("user", JSON.stringify(res.data))  // 缓存用户信息
 
               // 登录成功的时候更新当前路由
-              activeRouter()
+              // activeRouter()
               this.$router.push("/")  //登录成功之后进行页面的跳转，跳转到主页
 
             } else {

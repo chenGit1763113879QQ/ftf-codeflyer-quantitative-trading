@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     @ResponseBody//返回json串
     public Result<?> error(HttpServletRequest request, Exception e) {
         log.error("异常信息：", e);
-        return Result.error("-1", "系统异常");
+        return Result.error("-1", "系统异常，请反馈管理员[ftf]");
     }
 
 

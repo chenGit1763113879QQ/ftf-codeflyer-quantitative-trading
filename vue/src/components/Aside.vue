@@ -1,17 +1,19 @@
 <template>
-  <div>
-    <el-menu
-        style="width: 200px; min-height: calc(100vh - 50px)"
-        :default-active="$route.path"
-        router
-    >
-      <div  v-for="m in user.permissions" :key="m.id">
-        <el-menu-item :index="m.path" v-if="m.name !== 'Person' && m.name !== 'Password' ">
-          <i :class="m.icon"></i>  {{ m.comment }}
-        </el-menu-item>
-      </div>
-    </el-menu>
-  </div>
+  <el-row class="tac">
+    <el-col :span="12">
+      <el-menu
+          style="width: 200px;min-height: calc(100vh - 50px)"
+          default-active="stock-poll"
+          class="el-menu-vertical-demo"
+          router
+      >
+        <el-menu-item index="stock-poll"><span>基金池</span></el-menu-item>
+        <el-menu-item index="2"><span>今日计划</span></el-menu-item>
+        <el-menu-item index="3"><span>执行列表</span></el-menu-item>
+        <el-menu-item index="4"><span>执行结果</span></el-menu-item>
+      </el-menu>
+    </el-col>
+  </el-row>
 </template>
 
 <script>

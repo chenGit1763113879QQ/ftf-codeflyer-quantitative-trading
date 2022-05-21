@@ -14,14 +14,14 @@ export function activeRouter() {
             redirect: "/home",
             children: []
         }
-        user.permissions.forEach(p => {
-            let obj = {
-                path: p.path,
-                name: p.name,
-                component: () => import("@/views/" + p.name)
-            };
-            root.children.push(obj)
-        })
+        // user.permissions.forEach(p => {
+        //     let obj = {
+        //         path: p.path,
+        //         name: p.name,
+        //         component: () => import("@/views/" + p.name)
+        //     };
+        //     root.children.push(obj)
+        // })
         if (router) {
             router.addRoute(root)
         }
