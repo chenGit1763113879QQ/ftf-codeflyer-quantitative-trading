@@ -3,7 +3,7 @@
     <div class="video-container">
       <div :style="fixStyle" class="filter">
         <div style="width: 400px; margin: 100px auto">
-          <div style="font-size: 30px; text-align: center; padding: 30px 0; color: #333">欢迎登录</div>
+          <div style="font-size: 30px; text-align: center; padding: 30px 0; color: #333">请登录</div>
           <el-form ref="form" :model="form" size="normal" :rules="rules">
             <el-form-item prop="username">
               <el-input prefix-icon="el-icon-user-solid" v-model="form.username" placeholder="请输入账号"></el-input>
@@ -11,12 +11,12 @@
             <el-form-item prop="password">
               <el-input prefix-icon="el-icon-lock" v-model="form.password" show-password placeholder="请输入密码"></el-input>
             </el-form-item>
-            <el-form-item>
-              <div style="display: flex">
-                <el-input prefix-icon="el-icon-key" v-model="form.validCode" style="width: 50%;" placeholder="请输入验证码"></el-input>
-                <ValidCode @input="createValidCode" />
-              </div>
-            </el-form-item>
+<!--            <el-form-item>-->
+<!--              <div style="display: flex">-->
+<!--                <el-input prefix-icon="el-icon-key" v-model="form.validCode" style="width: 50%;" placeholder="请输入验证码"></el-input>-->
+<!--                <ValidCode @input="createValidCode" />-->
+<!--              </div>-->
+<!--            </el-form-item>-->
 <!--            <el-form-item>-->
 <!--              <el-radio v-model="form.role" :label="1" style="color: white">管理员</el-radio>-->
 <!--              <el-radio v-model="form.role" :label="2" style="color: white">普通用户</el-radio>-->
@@ -24,14 +24,14 @@
             <el-form-item>
               <el-button style="width: 100%" type="primary" @click="login">登 录</el-button>
             </el-form-item>
-            <el-form-item><el-button type="text" @click="$router.push('/register')">前往注册 >> </el-button></el-form-item>
+<!--            <el-form-item><el-button type="text" @click="$router.push('/register')">前往注册 >> </el-button></el-form-item>-->
           </el-form>
         </div>
       </div>
-      <video :style="fixStyle" autoplay loop muted class="fillWidth" v-on:canplay="canplay">
-        <source src="../assets/sea.mp4" type="video/mp4"/>
-        浏览器不支持 video 标签，建议升级浏览器。
-      </video>
+<!--      <video :style="fixStyle" autoplay loop muted class="fillWidth" v-on:canplay="canplay">-->
+<!--        <source src="../assets/sea.mp4" type="video/mp4"/>-->
+<!--        浏览器不支持 video 标签，建议升级浏览器。-->
+<!--      </video>-->
     </div>
   </div>
 
@@ -51,7 +51,8 @@ export default {
     return {
       vedioCanPlay: false,
       fixStyle: '',
-      form: {role: 1},
+      // form: {role: 1},
+      form: {},
       rules: {
         username: [
           {required: true, message: '请输入用户名', trigger: 'blur'},
@@ -101,24 +102,24 @@ export default {
     window.onresize()
   },
   methods: {
-    canplay() {
-      this.vedioCanPlay = true
-    },
+    // canplay() {
+    //   this.vedioCanPlay = true
+    // },
     // 接收验证码组件提交的 4位验证码
-    createValidCode(data) {
-      this.validCode = data
-    },
+    // createValidCode(data) {
+    //   this.validCode = data
+    // },
     login () {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          if (!this.form.validCode) {
-            this.$message.error("请填写验证码")
-            return
-          }
-          if(this.form.validCode.toLowerCase() !== this.validCode.toLowerCase()) {
-            this.$message.error("验证码错误")
-            return
-          }
+          // if (!this.form.validCode) {
+          //   this.$message.error("请填写验证码")
+          //   return
+          // }
+          // if(this.form.validCode.toLowerCase() !== this.validCode.toLowerCase()) {
+          //   this.$message.error("验证码错误")
+          //   return
+          // }
           request.post("/user/login", this.form).then(res => {
             if (res.code === '0') {
               this.$message({
