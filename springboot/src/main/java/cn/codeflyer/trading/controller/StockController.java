@@ -82,6 +82,17 @@ public class StockController {
         }
         return Result.success();
     }
+
+    @GetMapping("/parse")
+    public Result<?> parse(@RequestParam String date) {
+        log.info("量化分析 date={}", date);
+        try {
+            stockService.parse(date);
+        } catch (Exception e) {
+            return Result.error("-1", "过程异常-" + e.getMessage());
+        }
+        return Result.success();
+    }
 }
 
 

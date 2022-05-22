@@ -1,9 +1,15 @@
 package cn.codeflyer.trading.service;
 
+import cn.codeflyer.trading.entity.SinaStockMarketDTO;
 import cn.codeflyer.trading.entity.Stock;
 import cn.codeflyer.trading.mapper.StockMapper;
+import cn.codeflyer.trading.utils.DateUtils;
 import cn.codeflyer.trading.utils.HTTPUtils;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -11,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -61,8 +70,99 @@ public class StockServiceImpl implements StockService {
         return stocks;
     }
 
+    @Override
+    public void parse(String date) throws Exception {
+        Date inputDate = getAndJudgeTime(date);
+        int dayInWeek = DateUtil.dayOfWeek(inputDate);
+        //西方的星期，从星期日算第一天...所以需要做以下兼容
+        if(dayInWeek == 7 || dayInWeek == 1){
+            throw new RuntimeException("星期天不能交易，也不能分析！");
+        }
+        dayInWeek--;
+        int t_1 = -2;
+        int t_2 = -1;
+        if (dayInWeek == 1) {
+            t_1 = -4;
+            t_2 = -3;
+        }
+        if (dayInWeek == 2) {
+            t_1 = -4;
+            t_2 = -1;
+        }
+        QueryWrapper<Stock> queryStockWrapper = new QueryWrapper();
+        queryStockWrapper.notIn("status", 0);
+        queryStockWrapper.notIn("is_delete", 1);
+        List<Stock> stocks = stockMapper.selectList(queryStockWrapper);
+        for (Stock stock : stocks) {
+            log.info("开始分析  date={},stock={}", date, stock);
+            String url = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=%s&scale=240&ma=%s&datalen=180";
+            String url5 = String.format(url, stock.getStockCode(), 5);
+            String json5 = HTTPUtils.get(url5);
+            JSONArray jsonArray5 = JSONUtil.parseArray(json5);
+            List<SinaStockMarketDTO> sinaStockMarket5DTOS = jsonArray5.toList(SinaStockMarketDTO.class);
+            double ma_price_5_r2 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_1));
+            double ma_price_5_r1 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_2));
+            String url10 = String.format(url, stock.getStockCode(), 10);
+            String json10 = HTTPUtils.get(url10);
+            JSONArray jsonArray10 = JSONUtil.parseArray(json10);
+            List<SinaStockMarketDTO> sinaStockMarket10DTOS = jsonArray10.toList(SinaStockMarketDTO.class);
+            double ma_price_10_r2 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_1));
+            double ma_price_10_r1 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_2));
+            SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, DateUtils.addDay(date, t_2));
+            double open = Double.parseDouble(sinaStockMarketDTO.getOpen());
+            double close = Double.parseDouble(sinaStockMarketDTO.getClose());
+            if (ma_price_5_r2 < ma_price_10_r2 && ma_price_5_r1 > ma_price_10_r1 && open < close) {
+                log.info("今日命中买入决策  stock={}，date={},ma_price_5_r2={},ma_price_10_r2={},ma_price_5_r1={},ma_price_10_r1={},open={},close={}", stock, date, ma_price_5_r2, ma_price_10_r2, ma_price_5_r1, ma_price_10_r1, open, close);
+                recordBuyInfo(stock,date);
+            }
+        }
+    }
+
+    private void recordBuyInfo(Stock stock,String date){
+
+    }
+
+
     private String buildLikeSql(String keyWord) {
         return "%" + keyWord + "%";
+    }
+
+    private Date getAndJudgeTime(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDate = null;
+        try {
+            startDate = sdf.parse(date);
+            //todo 需加强时间校验，仅时间范围内可进行分析
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("输入的日期不合法，请校验！date=" + date);
+        }
+        return startDate;
+    }
+
+    private Double getMaPrice(List<SinaStockMarketDTO> sinaStockMarketDTOS, Integer maValue, String date) {
+        for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
+            if (sinaStockMarketDTO.getDay().equals(date)) {
+                if (maValue == 5) {
+                    return sinaStockMarketDTO.getMa_price5();
+                } else if (maValue == 10) {
+                    return sinaStockMarketDTO.getMa_price10();
+                } else {
+                    throw new RuntimeException("均值天数不合法，当前仅支持5日10日，请校验！maValue=" + maValue);
+
+                }
+            }
+        }
+        throw new RuntimeException("获取均值日期不合法-1，请校验！date=" + date);
+    }
+
+    private SinaStockMarketDTO getSinaStockMarket10DTO(List<SinaStockMarketDTO> sinaStockMarketDTOS, String date) {
+        for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
+            if (sinaStockMarketDTO.getDay().equals(date)) {
+                return sinaStockMarketDTO;
+            }
+        }
+        throw new RuntimeException("获取均值日期不合法-2，请校验！date=" + date);
     }
 
     public static void main(String[] args) {
