@@ -2,7 +2,9 @@ package cn.codeflyer.trading.controller;
 
 import cn.codeflyer.trading.common.Result;
 import cn.codeflyer.trading.entity.Stock;
+import cn.codeflyer.trading.entity.TradeDecision;
 import cn.codeflyer.trading.mapper.StockMapper;
+import cn.codeflyer.trading.mapper.TradeDecisionMapper;
 import cn.codeflyer.trading.service.StockService;
 import cn.codeflyer.trading.utils.HTTPUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -33,6 +35,9 @@ public class StockController {
     @Resource
     private StockMapper stockMapper;
 
+    @Resource
+    private TradeDecisionMapper tradeDecisionMapper;
+
     @PostMapping("/add")
     public Result<?> add(@RequestParam String stockCode) {
         log.info("股票池添加 stockCode={}", stockCode);
@@ -46,7 +51,7 @@ public class StockController {
 
     @GetMapping("/list")
     public Result<?> list(@RequestParam String search, @RequestParam(defaultValue = "1") Integer pageNum,
-                          @RequestParam(defaultValue = "10") Integer pageSize) throws InterruptedException {
+                          @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
         LambdaQueryWrapper<Stock> wrapper = Wrappers.<Stock>lambdaQuery().orderByDesc(Stock::getId);
         wrapper.eq(Stock::getIsDelete,false);
         if (Strings.isNotBlank(search)) {
@@ -92,6 +97,16 @@ public class StockController {
             return Result.error("-1", "过程异常-" + e.getMessage());
         }
         return Result.success();
+    }
+
+    @GetMapping("/trade-decision/list")
+    public Result<?> tradeDecisionList(@RequestParam String search, @RequestParam(defaultValue = "1") Integer pageNum,
+                          @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
+        LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByDesc(TradeDecision::getId);
+        wrapper.eq(TradeDecision::getIsDelete,false);
+
+        Page<TradeDecision> tradeDecisionPage = tradeDecisionMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        return Result.success(tradeDecisionPage);
     }
 }
 

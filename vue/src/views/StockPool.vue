@@ -43,7 +43,7 @@
       </el-table-column>
       <el-table-column width="100px"
           prop="price"
-          label="现价(分)">
+          label="现价(一手)">
       </el-table-column>
       <el-table-column width="200px"
           prop="createTime"

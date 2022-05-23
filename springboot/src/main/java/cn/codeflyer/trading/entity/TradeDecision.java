@@ -21,7 +21,6 @@ public class TradeDecision {
     @TableId(type = IdType.AUTO)
     private Integer id;
     private String stockCode;
-    @TableField(exist = false)
     private String stockName;
     /**
      * 交易类型  0买入 1卖出
@@ -31,6 +30,10 @@ public class TradeDecision {
      * 数量 默认1
      */
     private Integer amount;
+    /**
+     * 交易价格
+     */
+    private Integer tradePrice;
     /**
      * 交易时间
      */

@@ -2,19 +2,19 @@ package cn.codeflyer.trading.service;
 
 import cn.codeflyer.trading.entity.SinaStockMarketDTO;
 import cn.codeflyer.trading.entity.Stock;
+import cn.codeflyer.trading.entity.TradeDecision;
 import cn.codeflyer.trading.mapper.StockMapper;
+import cn.codeflyer.trading.mapper.TradeDecisionMapper;
 import cn.codeflyer.trading.utils.DateUtils;
 import cn.codeflyer.trading.utils.HTTPUtils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -32,6 +32,8 @@ import java.util.List;
 public class StockServiceImpl implements StockService {
     @Resource
     private StockMapper stockMapper;
+    @Resource
+    private TradeDecisionMapper tradeDecisionMapper;
 
     @Override
     public Boolean add(String stockCode) throws Exception {
@@ -95,7 +97,7 @@ public class StockServiceImpl implements StockService {
         List<Stock> stocks = stockMapper.selectList(queryStockWrapper);
         for (Stock stock : stocks) {
             log.info("开始分析  date={},stock={}", date, stock);
-            String url = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=%s&scale=240&ma=%s&datalen=180";
+            String url = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=%s&scale=240&ma=%s&datalen=30";
             String url5 = String.format(url, stock.getStockCode(), 5);
             String json5 = HTTPUtils.get(url5);
             JSONArray jsonArray5 = JSONUtil.parseArray(json5);
@@ -119,7 +121,15 @@ public class StockServiceImpl implements StockService {
     }
 
     private void recordBuyInfo(Stock stock,String date){
-
+        TradeDecision tradeDecision = TradeDecision.builder()
+                .stockCode(stock.getStockCode())
+                .stockName(stock.getStockName())
+                .amount(1)
+                .tradeStatus(1)
+                .tradeTime(getAndJudgeTime(date))
+                .tradeType(0)
+                .build();
+        tradeDecisionMapper.insert(tradeDecision);
     }
 
 

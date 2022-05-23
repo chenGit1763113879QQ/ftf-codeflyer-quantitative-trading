@@ -12,6 +12,11 @@ const routes = [
                 path: 'stock-pool',
                 name: 'StockPool',
                 component: () => import("@/views/StockPool"),
+            },
+            {
+                path: 'trade-decision',
+                name: 'TradeDecision',
+                component: () => import("@/views/TradeDecision"),
             }
         ]
     },
@@ -19,12 +24,7 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import("@/views/Login")
-    },
-    {
-        path: '/register',
-        name: 'Register',
-        component: () => import("@/views/Register")
-    },
+    }
 ]
 
 const router = createRouter({
