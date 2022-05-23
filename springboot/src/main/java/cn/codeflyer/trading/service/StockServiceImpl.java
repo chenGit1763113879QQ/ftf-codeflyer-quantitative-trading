@@ -114,7 +114,7 @@ public class StockServiceImpl implements StockService {
             double open = Double.parseDouble(sinaStockMarketDTO.getOpen());
             double close = Double.parseDouble(sinaStockMarketDTO.getClose());
             if (ma_price_5_r2 < ma_price_10_r2 && ma_price_5_r1 > ma_price_10_r1 && open < close) {
-                log.info("今日命中买入决策  stock={}，date={},ma_price_5_r2={},ma_price_10_r2={},ma_price_5_r1={},ma_price_10_r1={},open={},close={}", stock, date, ma_price_5_r2, ma_price_10_r2, ma_price_5_r1, ma_price_10_r1, open, close);
+                log.info("今日命中买入决策  stockCode={},stockName={}date={},ma_price_5_r2={},ma_price_10_r2={},ma_price_5_r1={},ma_price_10_r1={},open={},close={}", stock.getStockCode(), stock.getStockName(), date, ma_price_5_r2, ma_price_10_r2, ma_price_5_r1, ma_price_10_r1, open, close);
                 recordBuyInfo(stock,date);
             }
         }

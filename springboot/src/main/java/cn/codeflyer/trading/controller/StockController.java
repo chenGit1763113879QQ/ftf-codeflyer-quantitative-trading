@@ -1,12 +1,14 @@
 package cn.codeflyer.trading.controller;
 
 import cn.codeflyer.trading.common.Result;
+import cn.codeflyer.trading.entity.EmailMessage;
 import cn.codeflyer.trading.entity.Stock;
 import cn.codeflyer.trading.entity.TradeDecision;
 import cn.codeflyer.trading.mapper.StockMapper;
 import cn.codeflyer.trading.mapper.TradeDecisionMapper;
 import cn.codeflyer.trading.service.StockService;
 import cn.codeflyer.trading.utils.HTTPUtils;
+import cn.codeflyer.trading.utils.MailUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,6 +30,9 @@ import java.util.List;
 @RequestMapping("/stock")
 @Slf4j
 public class StockController {
+
+    @Resource
+    private MailUtil mailUtil;
 
     @Resource
     private StockService stockService;
@@ -108,6 +113,19 @@ public class StockController {
         Page<TradeDecision> tradeDecisionPage = tradeDecisionMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
         return Result.success(tradeDecisionPage);
     }
+
+    @GetMapping("/email/send")
+    public Result<?> emailSend(@RequestParam String content) throws Exception {
+        EmailMessage emailMessage = new EmailMessage();
+        emailMessage.setContent("我的测试邮件。。。\n嗯嗯啊哈哈");
+        if(Strings.isNotBlank(content)){
+            content = content.replaceAll("  ", "\n");
+            emailMessage.setContent(content);
+        }
+        mailUtil.sendEmail(emailMessage,null);
+        return Result.success(emailMessage.getContent());
+    }
+
 }
 
 

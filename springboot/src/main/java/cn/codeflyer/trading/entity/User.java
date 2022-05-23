@@ -27,6 +27,8 @@ public class User {
     private String nickName;
     private String password;
     private String avatar;
+    private Boolean isSendEmail;
+    private String emailAddress;
     private Boolean isDelete;
     private Date createTime;
     private Date updateTime;
