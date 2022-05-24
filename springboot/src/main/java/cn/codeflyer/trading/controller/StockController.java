@@ -17,6 +17,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -95,6 +97,10 @@ public class StockController {
 
     @GetMapping("/parse")
     public Result<?> parse(@RequestParam String date) {
+        if(Strings.isBlank(date)){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            date = sdf.format(new Date());
+        }
         log.info("量化分析 date={}", date);
         try {
             stockService.parse(date);

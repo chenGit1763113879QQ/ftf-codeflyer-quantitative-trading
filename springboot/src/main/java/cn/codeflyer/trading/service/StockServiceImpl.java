@@ -7,11 +7,13 @@ import cn.codeflyer.trading.mapper.StockMapper;
 import cn.codeflyer.trading.mapper.TradeDecisionMapper;
 import cn.codeflyer.trading.utils.DateUtils;
 import cn.codeflyer.trading.utils.HTTPUtils;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -113,14 +115,16 @@ public class StockServiceImpl implements StockService {
             SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, DateUtils.addDay(date, t_2));
             double open = Double.parseDouble(sinaStockMarketDTO.getOpen());
             double close = Double.parseDouble(sinaStockMarketDTO.getClose());
-            if (ma_price_5_r2 < ma_price_10_r2 && ma_price_5_r1 > ma_price_10_r1 && open < close) {
+//            if (ma_price_5_r2 < ma_price_10_r2 && ma_price_5_r1 > ma_price_10_r1 && open < close) {
+            if(true){
                 log.info("今日命中买入决策  stockCode={},stockName={}date={},ma_price_5_r2={},ma_price_10_r2={},ma_price_5_r1={},ma_price_10_r1={},open={},close={}", stock.getStockCode(), stock.getStockName(), date, ma_price_5_r2, ma_price_10_r2, ma_price_5_r1, ma_price_10_r1, open, close);
-                recordBuyInfo(stock,date);
+                recordBuyDecision(stock,date);
+                recordBuyPrice(stock,date,sinaStockMarket5DTOS);
             }
         }
     }
 
-    private void recordBuyInfo(Stock stock,String date){
+    private void recordBuyDecision(Stock stock,String date){
         TradeDecision tradeDecision = TradeDecision.builder()
                 .stockCode(stock.getStockCode())
                 .stockName(stock.getStockName())
@@ -130,6 +134,23 @@ public class StockServiceImpl implements StockService {
                 .tradeType(0)
                 .build();
         tradeDecisionMapper.insert(tradeDecision);
+    }
+
+    private void recordBuyPrice(Stock stock,String date,List<SinaStockMarketDTO> sinaStockMarketDTOS){
+        Date parseTime = getAndJudgeTime(date);
+        DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
+        for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
+            if (sinaStockMarketDTO.getDay().equals(date)) {
+                int openPrice = Integer.parseInt(Double.toString(Double.parseDouble(sinaStockMarketDTO.getOpen()) * 100.0).split("\\.")[0]);
+                UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<TradeDecision>();
+                updateWrapper.eq("stock_code",stock.getStockCode());
+                updateWrapper.eq("trade_type",0);
+                updateWrapper.ge("trade_time",parseTime);
+                updateWrapper.le("trade_time",parseEndTimeOfDay);
+                updateWrapper.set("trade_price",openPrice);
+                tradeDecisionMapper.update(null,updateWrapper);
+            }
+        }
     }
 
 
@@ -176,8 +197,13 @@ public class StockServiceImpl implements StockService {
     }
 
     public static void main(String[] args) {
+//
+//        String s = HttpUtil.get("https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sz000001&scale=240&ma=5&datalen=10");
+//        System.out.println(s);
 
-        String s = HttpUtil.get("https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sz000001&scale=240&ma=5&datalen=10");
-        System.out.println(s);
+        String mm= "34.0";
+        String[] split = mm.split("\\.");
+
+
     }
 }
