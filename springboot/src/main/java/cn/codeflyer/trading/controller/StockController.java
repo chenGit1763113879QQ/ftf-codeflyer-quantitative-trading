@@ -97,13 +97,10 @@ public class StockController {
 
     @GetMapping("/parse")
     public Result<?> parse(@RequestParam String date) {
-        if(Strings.isBlank(date)){
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            date = sdf.format(new Date());
-        }
-        log.info("量化分析 date={}", date);
+        log.info("量化分析 买卖全量 接口入参 date={}", date);
         try {
-            stockService.parse(date);
+            stockService.buyParse(date);
+            stockService.saleParse(date);
         } catch (Exception e) {
             return Result.error("-1", "过程异常-" + e.getMessage());
         }

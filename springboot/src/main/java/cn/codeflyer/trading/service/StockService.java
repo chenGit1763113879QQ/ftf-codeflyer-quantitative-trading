@@ -12,5 +12,6 @@ import java.util.List;
 public interface StockService {
     Boolean add(String stockCode) throws Exception;
     List<Stock> list(String keyWord) throws Exception;
-    void parse(String date) throws InterruptedException, Exception;
+    void buyParse(String date) throws Exception;
+    void saleParse(String date) throws Exception;
 }

@@ -14,4 +14,7 @@ public interface StockMapper extends BaseMapper<Stock> {
     @Select("select * from stock where stock_code like #{keyWord} or stock_name like #{keyWord} and is_delete=0")
     List<Stock> selectByKeyWord(String keyWord);
 
+    @Select("select * from stock where stock_code=#{username} and is_delete=0")
+    Stock selectByCode(String stockCode);
+
 }
