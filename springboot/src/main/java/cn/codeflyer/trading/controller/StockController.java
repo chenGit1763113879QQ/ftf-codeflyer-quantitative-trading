@@ -72,7 +72,8 @@ public class StockController {
             String url = "https://qt.gtimg.cn/q=" + stock.getStockCode();
             String res = HTTPUtils.get(url);
             try {
-                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+//                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+                int price = Integer.parseInt(Double.toString(Double.parseDouble(res.split("~")[3]) * 1000.0).split("\\.")[0]);
                 stock.setPrice(price);
             } catch (Exception e) {
                 e.printStackTrace();

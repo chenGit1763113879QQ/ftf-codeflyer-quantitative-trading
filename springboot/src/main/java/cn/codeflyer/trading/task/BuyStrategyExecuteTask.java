@@ -53,7 +53,7 @@ public class BuyStrategyExecuteTask {
         long startTime=System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String dateNowStr = sdf.format(new Date());
-        stockService.buyParse(dateNowStr);
+        stockService.updateBuyPrice(dateNowStr);
         long endTime=System.currentTimeMillis();
 
         log.info("买入决策任务执行完成 用时"+(endTime-startTime)+"ms");
@@ -65,7 +65,7 @@ public class BuyStrategyExecuteTask {
         long startTime=System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String dateNowStr = sdf.format(new Date());
-        stockService.sellParse(dateNowStr);
+        stockService.updateSellPrice(dateNowStr);
         long endTime=System.currentTimeMillis();
 
         log.info("卖出决策任务执行完成 用时"+(endTime-startTime)+"ms");

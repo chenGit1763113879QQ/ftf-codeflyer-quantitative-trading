@@ -43,7 +43,7 @@
       </el-table-column>
       <el-table-column width="150px"
           prop="tradePrice"
-          label="交易价格(一手)">
+          label="交易价格(十手)">
       </el-table-column>
       <el-table-column width="200px"
           prop="tradeTime"
@@ -51,7 +51,7 @@
       </el-table-column>
       <el-table-column width="100px"
           prop="amount"
-          label="数量(手)">
+          label="数量(手*10)">
       </el-table-column>
 
 <!--      <el-table-column label="操作" width="200">-->

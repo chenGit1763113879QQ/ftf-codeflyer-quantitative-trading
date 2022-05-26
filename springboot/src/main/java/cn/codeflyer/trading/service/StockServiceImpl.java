@@ -1,9 +1,6 @@
 package cn.codeflyer.trading.service;
 
-import cn.codeflyer.trading.entity.DecisionResult;
-import cn.codeflyer.trading.entity.SinaStockMarketDTO;
-import cn.codeflyer.trading.entity.Stock;
-import cn.codeflyer.trading.entity.TradeDecision;
+import cn.codeflyer.trading.entity.*;
 import cn.codeflyer.trading.mapper.DecisionResultMapper;
 import cn.codeflyer.trading.mapper.StockMapper;
 import cn.codeflyer.trading.mapper.TradeDecisionMapper;
@@ -86,24 +83,25 @@ public class StockServiceImpl implements StockService {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             date = sdf.format(new Date());
         }
+        TempDataDTO tempDataDTO = getQuantitativeDate(date);
         log.info("量化买入分析 date={}", date);
         Date inputDate = getAndJudgeTime(date);
-        int dayInWeek = DateUtil.dayOfWeek(inputDate);
-        //西方的星期，从星期日算第一天...所以需要做以下兼容
-        if (dayInWeek == 7 || dayInWeek == 1) {
-            throw new RuntimeException("星期天不能交易，也不能分析！");
-        }
-        dayInWeek--;
-        int t_1 = -2;
-        int t_2 = -1;
-        if (dayInWeek == 1) {
-            t_1 = -4;
-            t_2 = -3;
-        }
-        if (dayInWeek == 2) {
-            t_1 = -4;
-            t_2 = -1;
-        }
+//        int dayInWeek = DateUtil.dayOfWeek(inputDate);
+//        //西方的星期，从星期日算第一天...所以需要做以下兼容
+//        if (dayInWeek == 7 || dayInWeek == 1) {
+//            throw new RuntimeException("星期天不能交易，也不能分析！");
+//        }
+//        dayInWeek--;
+//        int t_1 = -2;
+//        int t_2 = -1;
+//        if (dayInWeek == 1) {
+//            t_1 = -4;
+//            t_2 = -3;
+//        }
+//        if (dayInWeek == 2) {
+//            t_1 = -4;
+//            t_2 = -1;
+//        }
         QueryWrapper<Stock> queryStockWrapper = new QueryWrapper();
         queryStockWrapper.notIn("status", 0);
         queryStockWrapper.notIn("is_delete", 1);
@@ -115,15 +113,15 @@ public class StockServiceImpl implements StockService {
             String json5 = HTTPUtils.get(url5);
             JSONArray jsonArray5 = JSONUtil.parseArray(json5);
             List<SinaStockMarketDTO> sinaStockMarket5DTOS = jsonArray5.toList(SinaStockMarketDTO.class);
-            double ma_price_5_r2 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_1));
-            double ma_price_5_r1 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_2));
+            double ma_price_5_r2 = getMaPrice(sinaStockMarket5DTOS, 5, tempDataDTO.getD1());
+            double ma_price_5_r1 = getMaPrice(sinaStockMarket5DTOS, 5, tempDataDTO.getD2());
             String url10 = String.format(url, stock.getStockCode(), 10);
             String json10 = HTTPUtils.get(url10);
             JSONArray jsonArray10 = JSONUtil.parseArray(json10);
             List<SinaStockMarketDTO> sinaStockMarket10DTOS = jsonArray10.toList(SinaStockMarketDTO.class);
-            double ma_price_10_r2 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_1));
-            double ma_price_10_r1 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_2));
-            SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, DateUtils.addDay(date, t_2));
+            double ma_price_10_r2 = getMaPrice(sinaStockMarket10DTOS, 10, tempDataDTO.getD1());
+            double ma_price_10_r1 = getMaPrice(sinaStockMarket10DTOS, 10, tempDataDTO.getD2());
+            SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, tempDataDTO.getD2());
             double open = Double.parseDouble(sinaStockMarketDTO.getOpen());
             double close = Double.parseDouble(sinaStockMarketDTO.getClose());
             boolean ma5_2_ma10_2 = ma_price_5_r2 < ma_price_10_r2;
@@ -145,24 +143,25 @@ public class StockServiceImpl implements StockService {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             date = sdf.format(new Date());
         }
+        TempDataDTO tempDataDTO = getQuantitativeDate(date);
         log.info("量化卖出分析 date={}", date);
         Date inputDate = getAndJudgeTime(date);
-        int dayInWeek = DateUtil.dayOfWeek(inputDate);
-        //西方的星期，从星期日算第一天...所以需要做以下兼容
-        if (dayInWeek == 7 || dayInWeek == 1) {
-            throw new RuntimeException("星期天不能交易，也不能分析！");
-        }
-        dayInWeek--;
-        int t_1 = -2;
-        int t_2 = -1;
-        if (dayInWeek == 1) {
-            t_1 = -4;
-            t_2 = -3;
-        }
-        if (dayInWeek == 2) {
-            t_1 = -4;
-            t_2 = -1;
-        }
+//        int dayInWeek = DateUtil.dayOfWeek(inputDate);
+//        //西方的星期，从星期日算第一天...所以需要做以下兼容
+//        if (dayInWeek == 7 || dayInWeek == 1) {
+//            throw new RuntimeException("星期天不能交易，也不能分析！");
+//        }
+//        dayInWeek--;
+//        int t_1 = -2;
+//        int t_2 = -1;
+//        if (dayInWeek == 1) {
+//            t_1 = -4;
+//            t_2 = -3;
+//        }
+//        if (dayInWeek == 2) {
+//            t_1 = -4;
+//            t_2 = -1;
+//        }
         LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByAsc(TradeDecision::getId);
         wrapper.eq(TradeDecision::getTradeStatus, 1);
         wrapper.eq(TradeDecision::getTradeType, 0);
@@ -176,15 +175,15 @@ public class StockServiceImpl implements StockService {
             String json5 = HTTPUtils.get(url5);
             JSONArray jsonArray5 = JSONUtil.parseArray(json5);
             List<SinaStockMarketDTO> sinaStockMarket5DTOS = jsonArray5.toList(SinaStockMarketDTO.class);
-            double ma_price_5_r2 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_1));
-            double ma_price_5_r1 = getMaPrice(sinaStockMarket5DTOS, 5, DateUtils.addDay(date, t_2));
+            double ma_price_5_r2 = getMaPrice(sinaStockMarket5DTOS, 5, tempDataDTO.getD1());
+            double ma_price_5_r1 = getMaPrice(sinaStockMarket5DTOS, 5, tempDataDTO.getD2());
             String url10 = String.format(url, stock.getStockCode(), 10);
             String json10 = HTTPUtils.get(url10);
             JSONArray jsonArray10 = JSONUtil.parseArray(json10);
             List<SinaStockMarketDTO> sinaStockMarket10DTOS = jsonArray10.toList(SinaStockMarketDTO.class);
-            double ma_price_10_r2 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_1));
-            double ma_price_10_r1 = getMaPrice(sinaStockMarket10DTOS, 10, DateUtils.addDay(date, t_2));
-            SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, DateUtils.addDay(date, t_2));
+            double ma_price_10_r2 = getMaPrice(sinaStockMarket10DTOS, 10, tempDataDTO.getD1());
+            double ma_price_10_r1 = getMaPrice(sinaStockMarket10DTOS, 10, tempDataDTO.getD2());
+            SinaStockMarketDTO sinaStockMarketDTO = getSinaStockMarket10DTO(sinaStockMarket10DTOS, tempDataDTO.getD2());
             double open = Double.parseDouble(sinaStockMarketDTO.getOpen());
             double close = Double.parseDouble(sinaStockMarketDTO.getClose());
             boolean ma5_2_ma10_2 = ma_price_5_r2 > ma_price_10_r2;
@@ -196,7 +195,7 @@ public class StockServiceImpl implements StockService {
                     recordSellDecision(stock, date);
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                     String todayDate = sdf.format(new Date());
-                    if(!date.equals(todayDate)){
+                    if (!date.equals(todayDate)) {
                         recordSellPrice(stock, date, sinaStockMarket5DTOS);
                         recordDecisionResult(stock, date);
                     }
@@ -220,11 +219,12 @@ public class StockServiceImpl implements StockService {
         wrapper.ge(TradeDecision::getTradeTime, parseTime);
         wrapper.le(TradeDecision::getTradeTime, parseEndTimeOfDay);
         List<TradeDecision> buyTradeDecisions = tradeDecisionMapper.selectList(wrapper);
-        for(TradeDecision buyTradeDecision:buyTradeDecisions){
+        for (TradeDecision buyTradeDecision : buyTradeDecisions) {
             String url = "https://qt.gtimg.cn/q=" + buyTradeDecision.getStockCode();
             String res = HTTPUtils.get(url);
             try {
-                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+//                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+                int price = Integer.parseInt(Double.toString(Double.parseDouble(res.split("~")[3]) * 1000.0).split("\\.")[0]);
                 UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("stock_code", buyTradeDecision.getStockCode());
                 updateWrapper.eq("trade_type", 0);
@@ -252,11 +252,13 @@ public class StockServiceImpl implements StockService {
         wrapper.ge(TradeDecision::getTradeTime, parseTime);
         wrapper.le(TradeDecision::getTradeTime, parseEndTimeOfDay);
         List<TradeDecision> sellTradeDecisions = tradeDecisionMapper.selectList(wrapper);
-        for(TradeDecision sellTradeDecision:sellTradeDecisions){
+        for (TradeDecision sellTradeDecision : sellTradeDecisions) {
             String url = "https://qt.gtimg.cn/q=" + sellTradeDecision.getStockCode();
             String res = HTTPUtils.get(url);
             try {
-                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+//                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+                int price = Integer.parseInt(Double.toString(Double.parseDouble(res.split("~")[3]) * 1000.0).split("\\.")[0]);
+
                 UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("stock_code", sellTradeDecision.getStockCode());
                 updateWrapper.eq("trade_type", 1);
@@ -266,7 +268,7 @@ public class StockServiceImpl implements StockService {
                 tradeDecisionMapper.update(null, updateWrapper);
 
                 Stock stock = stockMapper.selectByCode(sellTradeDecision.getStockCode());
-                recordDecisionResult(stock,date);
+                recordDecisionResult(stock, date);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -302,7 +304,7 @@ public class StockServiceImpl implements StockService {
         DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
         for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
             if (sinaStockMarketDTO.getDay().equals(date)) {
-                int openPrice = Integer.parseInt(Double.toString(Double.parseDouble(sinaStockMarketDTO.getOpen()) * 100.0).split("\\.")[0]);
+                int openPrice = Integer.parseInt(Double.toString(Double.parseDouble(sinaStockMarketDTO.getOpen()) * 1000.0).split("\\.")[0]);
                 UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<TradeDecision>();
                 updateWrapper.eq("stock_code", stock.getStockCode());
                 updateWrapper.eq("trade_type", 0);
@@ -319,7 +321,7 @@ public class StockServiceImpl implements StockService {
         DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
         for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
             if (sinaStockMarketDTO.getDay().equals(date)) {
-                int openPrice = Integer.parseInt(Double.toString(Double.parseDouble(sinaStockMarketDTO.getOpen()) * 100.0).split("\\.")[0]);
+                int openPrice = Integer.parseInt(Double.toString(Double.parseDouble(sinaStockMarketDTO.getOpen()) * 1000.0).split("\\.")[0]);
                 UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<TradeDecision>();
                 updateWrapper.eq("stock_code", stock.getStockCode());
                 updateWrapper.eq("trade_type", 1);
@@ -410,6 +412,32 @@ public class StockServiceImpl implements StockService {
             }
         }
         throw new RuntimeException("获取均值日期不合法-2，请校验！date=" + date);
+    }
+
+    private TempDataDTO getQuantitativeDate(String date) throws Exception {
+        TempDataDTO tempDataDTO = new TempDataDTO();
+        String yesterday = DateUtils.addDay(date, -1);
+        String url = "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=%s&scale=240&ma=%s&datalen=30";
+        String url5 = String.format(url, "sh000001", 5);
+        String json5 = HTTPUtils.get(url5);
+        JSONArray jsonArray5 = JSONUtil.parseArray(json5);
+        List<SinaStockMarketDTO> sinaStockMarket5DTOS = jsonArray5.toList(SinaStockMarketDTO.class);
+        if (yesterday.equals(sinaStockMarket5DTOS.get(sinaStockMarket5DTOS.size() - 1).getDay())) {
+            tempDataDTO.setD2(sinaStockMarket5DTOS.get(sinaStockMarket5DTOS.size() - 1).getDay());
+            tempDataDTO.setD1(sinaStockMarket5DTOS.get(sinaStockMarket5DTOS.size() - 2).getDay());
+            return tempDataDTO;
+        }
+        SinaStockMarketDTO sinaStockMarketDTO = null;
+        for (int i = 0; i < sinaStockMarket5DTOS.size(); i++) {
+            sinaStockMarketDTO = sinaStockMarket5DTOS.get(i);
+            if (sinaStockMarketDTO.getDay().equals(date)) {
+                int dayIndex = i;
+                tempDataDTO.setD2(sinaStockMarket5DTOS.get(dayIndex - 1).getDay());
+                tempDataDTO.setD1(sinaStockMarket5DTOS.get(dayIndex - 2).getDay());
+                return tempDataDTO;
+            }
+        }
+        throw new RuntimeException("未获取到分析区间的日期，请检查该天是否为交易日。date=" + date);
     }
 
     public static void main(String[] args) {

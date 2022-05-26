@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 public class HTTPUtils {
     public static String get(String url) throws InterruptedException {
         if (url.contains("sina.com.cn")) {
-            log.info("请求新浪接口，睡眠5s");
-            Thread.sleep(5000);
+//            log.info("请求新浪接口，睡眠5s");
+//            Thread.sleep(5000);
         }
         String res = "";
         int retryTime = 5;
@@ -29,7 +29,7 @@ public class HTTPUtils {
             res = HttpUtil.get(url);
             retryTime--;
         }
-        log.info("请求响应: res={}", res.substring(50)+"......");
+        log.info("请求响应: res={}", res.substring(0,150)+"......");
         return res;
     }
 }
