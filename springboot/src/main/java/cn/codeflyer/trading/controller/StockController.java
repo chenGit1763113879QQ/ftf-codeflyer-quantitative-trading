@@ -17,8 +17,6 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 
@@ -51,6 +49,7 @@ public class StockController {
         try {
             stockService.add(stockCode);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("-1", "添加失败-" + e.getMessage());
         }
         return Result.success();
@@ -76,6 +75,7 @@ public class StockController {
                 Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
                 stock.setPrice(price);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("实时获取股票价格失败,stockCode={}", stock.getStockCode());
             }
         }
@@ -90,6 +90,7 @@ public class StockController {
             stock.setStatus(toStatus);
             stockMapper.updateById(stock);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("-1", "上下线失败-" + e.getMessage());
         }
         return Result.success();
@@ -100,8 +101,33 @@ public class StockController {
         log.info("量化分析 买卖全量 接口入参 date={}", date);
         try {
             stockService.buyParse(date);
-            stockService.saleParse(date);
+            stockService.sellParse(date);
         } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("-1", "过程异常-" + e.getMessage());
+        }
+        return Result.success();
+    }
+
+    @GetMapping("/parse-buy")
+    public Result<?> parseBuy(@RequestParam String date) {
+        log.info("量化分析 买入 接口入参 date={}", date);
+        try {
+            stockService.sellParse(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("-1", "过程异常-" + e.getMessage());
+        }
+        return Result.success();
+    }
+
+    @GetMapping("/parse-sell")
+    public Result<?> parseSell(@RequestParam String date) {
+        log.info("量化分析 卖出 接口入参 date={}", date);
+        try {
+            stockService.sellParse(date);
+        } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("-1", "过程异常-" + e.getMessage());
         }
         return Result.success();

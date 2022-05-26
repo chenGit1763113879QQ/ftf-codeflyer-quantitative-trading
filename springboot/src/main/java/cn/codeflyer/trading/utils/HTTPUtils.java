@@ -29,7 +29,7 @@ public class HTTPUtils {
             res = HttpUtil.get(url);
             retryTime--;
         }
-        log.info("请求响应: res={}", res);
+        log.info("请求响应: res={}", res.substring(50)+"......");
         return res;
     }
 }

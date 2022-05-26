@@ -13,5 +13,7 @@ public interface StockService {
     Boolean add(String stockCode) throws Exception;
     List<Stock> list(String keyWord) throws Exception;
     void buyParse(String date) throws Exception;
-    void saleParse(String date) throws Exception;
+    void sellParse(String date) throws Exception;
+    void updateBuyPrice(String date) throws InterruptedException, Exception;
+    void updateSellPrice(String date) throws InterruptedException, Exception;
 }

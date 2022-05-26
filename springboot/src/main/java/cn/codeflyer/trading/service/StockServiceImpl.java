@@ -140,7 +140,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public void saleParse(String date) throws Exception {
+    public void sellParse(String date) throws Exception {
         if (Strings.isBlank(date)) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             date = sdf.format(new Date());
@@ -193,13 +193,84 @@ public class StockServiceImpl implements StockService {
             if (ma5_2_ma10_2 && ma5_1_ma10_1) {
                 if (true) {
                     log.info("今日命中卖出决策  stockCode={},stockName={}date={},ma_price_5_r2={},ma_price_10_r2={},ma_price_5_r1={},ma_price_10_r1={},open={},close={}", stock.getStockCode(), stock.getStockName(), date, ma_price_5_r2, ma_price_10_r2, ma_price_5_r1, ma_price_10_r1, open, close);
-                    recordSaleDecision(stock, date);
-                    recordSalePrice(stock, date, sinaStockMarket5DTOS);
-                    recordDecisionResult(stock, date);
+                    recordSellDecision(stock, date);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    String todayDate = sdf.format(new Date());
+                    if(!date.equals(todayDate)){
+                        recordSellPrice(stock, date, sinaStockMarket5DTOS);
+                        recordDecisionResult(stock, date);
+                    }
                 }
             }
         }
 
+    }
+
+    @Override
+    public void updateBuyPrice(String date) throws Exception {
+        if (Strings.isBlank(date)) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            date = sdf.format(new Date());
+        }
+        Date parseTime = getAndJudgeTime(date);
+        DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
+        LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByAsc(TradeDecision::getId);
+        wrapper.eq(TradeDecision::getTradeStatus, 1);
+        wrapper.eq(TradeDecision::getTradeType, 0);
+        wrapper.ge(TradeDecision::getTradeTime, parseTime);
+        wrapper.le(TradeDecision::getTradeTime, parseEndTimeOfDay);
+        List<TradeDecision> buyTradeDecisions = tradeDecisionMapper.selectList(wrapper);
+        for(TradeDecision buyTradeDecision:buyTradeDecisions){
+            String url = "https://qt.gtimg.cn/q=" + buyTradeDecision.getStockCode();
+            String res = HTTPUtils.get(url);
+            try {
+                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+                UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("stock_code", buyTradeDecision.getStockCode());
+                updateWrapper.eq("trade_type", 0);
+                updateWrapper.ge("trade_time", parseTime);
+                updateWrapper.le("trade_time", parseEndTimeOfDay);
+                updateWrapper.set("trade_price", price);
+                tradeDecisionMapper.update(null, updateWrapper);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void updateSellPrice(String date) throws Exception {
+        if (Strings.isBlank(date)) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            date = sdf.format(new Date());
+        }
+        Date parseTime = getAndJudgeTime(date);
+        DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
+        LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByAsc(TradeDecision::getId);
+        wrapper.eq(TradeDecision::getTradeStatus, 0);
+        wrapper.eq(TradeDecision::getTradeType, 1);
+        wrapper.ge(TradeDecision::getTradeTime, parseTime);
+        wrapper.le(TradeDecision::getTradeTime, parseEndTimeOfDay);
+        List<TradeDecision> sellTradeDecisions = tradeDecisionMapper.selectList(wrapper);
+        for(TradeDecision sellTradeDecision:sellTradeDecisions){
+            String url = "https://qt.gtimg.cn/q=" + sellTradeDecision.getStockCode();
+            String res = HTTPUtils.get(url);
+            try {
+                Integer price = Integer.parseInt(res.split("~")[3].replace(".", ""));
+                UpdateWrapper<TradeDecision> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("stock_code", sellTradeDecision.getStockCode());
+                updateWrapper.eq("trade_type", 1);
+                updateWrapper.ge("trade_time", parseTime);
+                updateWrapper.le("trade_time", parseEndTimeOfDay);
+                updateWrapper.set("trade_price", price);
+                tradeDecisionMapper.update(null, updateWrapper);
+
+                Stock stock = stockMapper.selectByCode(sellTradeDecision.getStockCode());
+                recordDecisionResult(stock,date);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void recordBuyDecision(Stock stock, String date) {
@@ -214,7 +285,7 @@ public class StockServiceImpl implements StockService {
         tradeDecisionMapper.insert(tradeDecision);
     }
 
-    private void recordSaleDecision(Stock stock, String date) {
+    private void recordSellDecision(Stock stock, String date) {
         TradeDecision tradeDecision = TradeDecision.builder()
                 .stockCode(stock.getStockCode())
                 .stockName(stock.getStockName())
@@ -243,7 +314,7 @@ public class StockServiceImpl implements StockService {
         }
     }
 
-    private void recordSalePrice(Stock stock, String date, List<SinaStockMarketDTO> sinaStockMarketDTOS) {
+    private void recordSellPrice(Stock stock, String date, List<SinaStockMarketDTO> sinaStockMarketDTOS) {
         Date parseTime = getAndJudgeTime(date);
         DateTime parseEndTimeOfDay = DateUtil.endOfDay(parseTime);
         for (SinaStockMarketDTO sinaStockMarketDTO : sinaStockMarketDTOS) {
@@ -274,20 +345,20 @@ public class StockServiceImpl implements StockService {
         wrapper.ge(TradeDecision::getTradeTime, parseTime);
         wrapper.le(TradeDecision::getTradeTime, parseEndTimeOfDay);
 //        List<TradeDecision> tradeDecisions = tradeDecisionMapper.selectList(wrapper);
-        TradeDecision saleTradeDecision = tradeDecisionMapper.selectList(wrapper).get(0);
-        LambdaQueryWrapper<TradeDecision> tradeDecisionWrapper = Wrappers.<TradeDecision>lambdaQuery().orderByDesc(TradeDecision::getId);
+        TradeDecision sellTradeDecision = tradeDecisionMapper.selectList(wrapper).get(0);
+        LambdaQueryWrapper<TradeDecision> tradeDecisionWrapper = Wrappers.<TradeDecision>lambdaQuery().orderByAsc(TradeDecision::getId);
         tradeDecisionWrapper.eq(TradeDecision::getTradeStatus, 1);
         tradeDecisionWrapper.eq(TradeDecision::getTradeType, 0);
-        tradeDecisionWrapper.eq(TradeDecision::getStockCode, saleTradeDecision.getStockCode());
+        tradeDecisionWrapper.eq(TradeDecision::getStockCode, sellTradeDecision.getStockCode());
         TradeDecision buyTradeDecision = tradeDecisionMapper.selectList(tradeDecisionWrapper).get(0);
         DecisionResult decisionResult = DecisionResult.builder()
                 .buyPrice(buyTradeDecision.getTradePrice())
                 .buyTime(buyTradeDecision.getTradeTime())
-                .salePrice(saleTradeDecision.getTradePrice())
-                .saleTime(saleTradeDecision.getTradeTime())
+                .sellPrice(sellTradeDecision.getTradePrice())
+                .sellTime(sellTradeDecision.getTradeTime())
                 .stockCode(stock.getStockCode())
                 .stockName(stock.getStockName())
-                .profit(saleTradeDecision.getTradePrice() - buyTradeDecision.getTradePrice())
+                .profit(sellTradeDecision.getTradePrice() - buyTradeDecision.getTradePrice())
                 .build();
         decisionResultMapper.insert(decisionResult);
 

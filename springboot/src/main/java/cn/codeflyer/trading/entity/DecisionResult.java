@@ -30,11 +30,11 @@ public class DecisionResult {
     private String stockName;
     private Integer strategyNo;
     private Integer buyPrice;
-    private Integer salePrice;
+    private Integer sellPrice;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date buyTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date saleTime;
+    private Date sellTime;
     private Integer profit;
     private Boolean isDelete;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
