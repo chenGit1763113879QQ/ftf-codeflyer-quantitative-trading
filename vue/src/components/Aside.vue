@@ -8,9 +8,9 @@
           router
       >
         <el-menu-item index="stock-pool"><span>基金/股票池</span></el-menu-item>
-        <el-menu-item index="2"><span>今日计划</span></el-menu-item>
+        <el-menu-item index="trade-decision-today"><span>今日计划</span></el-menu-item>
         <el-menu-item index="trade-decision"><span>执行列表</span></el-menu-item>
-        <el-menu-item index="4"><span>执行结果</span></el-menu-item>
+        <el-menu-item index="decision-result"><span>执行结果</span></el-menu-item>
       </el-menu>
     </el-col>
   </el-row>

@@ -149,19 +149,19 @@ export default {
         this.total = res.data.total
       })
 
-      request.get("/role/all").then(res => {
-        this.roles = res.data
-      })
+      // request.get("/role/all").then(res => {
+      //   this.roles = res.data
+      // })
     },
-    handleUploadSuccess(res) {
-      if (res.code === "0") {
-        this.$message.success("导入成功")
-        this.load()
-      }
-    },
-    exportUser() {
-      location.href = "http://" + window.server.filesUploadUrl + ":9090/user/export";
-    },
+    // handleUploadSuccess(res) {
+    //   if (res.code === "0") {
+    //     this.$message.success("导入成功")
+    //     this.load()
+    //   }
+    // },
+    // exportUser() {
+    //   location.href = "http://" + window.server.filesUploadUrl + ":9090/user/export";
+    // },
     add() {
       this.dialogVisible = true
       this.form = {}

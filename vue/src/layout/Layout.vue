@@ -40,7 +40,7 @@ export default {
       }
       let userId = JSON.parse(userJson).id
       // 从后台取出更新后的最新用户信息
-      request.get("/user/" + userId).then(res => {
+      request.get("/user/detail?userId=" + userId).then(res => {
         this.user = res.data
       })
     }

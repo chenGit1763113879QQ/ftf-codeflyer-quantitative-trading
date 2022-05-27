@@ -41,10 +41,10 @@
                        prop="stockName"
                        label="名称">
       </el-table-column>
-      <el-table-column width="150px"
-                       prop="tradePrice"
-                       label="交易价格(十手)">
-      </el-table-column>
+      <!--      <el-table-column width="150px"-->
+      <!--          prop="tradePrice"-->
+      <!--          label="交易价格(十手)">-->
+      <!--      </el-table-column>-->
       <el-table-column width="100px"
                        prop="tradeType"
                        label="类型 0买入">
@@ -113,7 +113,7 @@ export default {
   methods: {
     load() {
       this.loading = true
-      request.get("/stock/trade-decision/list", {
+      request.get("/stock/trade-decision/today/list", {
         params: {
           pageNum: this.currentPage,
           pageSize: this.pageSize,

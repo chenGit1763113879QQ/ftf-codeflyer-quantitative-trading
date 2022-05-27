@@ -17,6 +17,16 @@ const routes = [
                 path: 'trade-decision',
                 name: 'TradeDecision',
                 component: () => import("@/views/TradeDecision"),
+            },
+            {
+                path: 'trade-decision-today',
+                name: 'TradeDecisionToday',
+                component: () => import("@/views/TodayTradeDecision"),
+            },
+            {
+                path: 'decision-result',
+                name: 'decisionResult',
+                component: () => import("@/views/DecisionResult"),
             }
         ]
     },

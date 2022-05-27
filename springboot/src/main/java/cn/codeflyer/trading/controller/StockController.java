@@ -1,14 +1,18 @@
 package cn.codeflyer.trading.controller;
 
 import cn.codeflyer.trading.common.Result;
+import cn.codeflyer.trading.entity.DecisionResult;
 import cn.codeflyer.trading.entity.EmailMessage;
 import cn.codeflyer.trading.entity.Stock;
 import cn.codeflyer.trading.entity.TradeDecision;
+import cn.codeflyer.trading.mapper.DecisionResultMapper;
 import cn.codeflyer.trading.mapper.StockMapper;
 import cn.codeflyer.trading.mapper.TradeDecisionMapper;
 import cn.codeflyer.trading.service.StockService;
 import cn.codeflyer.trading.utils.HTTPUtils;
 import cn.codeflyer.trading.utils.MailUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,6 +21,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 
@@ -42,6 +47,9 @@ public class StockController {
 
     @Resource
     private TradeDecisionMapper tradeDecisionMapper;
+
+    @Resource
+    private DecisionResultMapper decisionResultMapper;
 
     @PostMapping("/add")
     public Result<?> add(@RequestParam String stockCode) {
@@ -134,9 +142,23 @@ public class StockController {
         return Result.success();
     }
 
+    @GetMapping("/trade-decision/today/list")
+    public Result<?> tradeDecisionTodayList(@RequestParam String search, @RequestParam(defaultValue = "1") Integer pageNum,
+                          @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
+        DateTime beginOfDay = DateUtil.beginOfDay(new Date());
+        DateTime endOfDay = DateUtil.endOfDay(new Date());
+        LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByDesc(TradeDecision::getId);
+        wrapper.eq(TradeDecision::getIsDelete,false);
+        wrapper.ge(TradeDecision::getTradeTime,beginOfDay);
+        wrapper.le(TradeDecision::getTradeTime,endOfDay);
+
+        Page<TradeDecision> tradeDecisionPage = tradeDecisionMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        return Result.success(tradeDecisionPage);
+    }
+
     @GetMapping("/trade-decision/list")
     public Result<?> tradeDecisionList(@RequestParam String search, @RequestParam(defaultValue = "1") Integer pageNum,
-                          @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
+                                       @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
         LambdaQueryWrapper<TradeDecision> wrapper = Wrappers.<TradeDecision>lambdaQuery().orderByDesc(TradeDecision::getId);
         wrapper.eq(TradeDecision::getIsDelete,false);
 
@@ -144,15 +166,25 @@ public class StockController {
         return Result.success(tradeDecisionPage);
     }
 
+    @GetMapping("/decision-result/list")
+    public Result<?> decisionResultList(@RequestParam String search, @RequestParam(defaultValue = "1") Integer pageNum,
+                                       @RequestParam(defaultValue = "10") Integer pageSize) throws Exception {
+        LambdaQueryWrapper<DecisionResult> wrapper = Wrappers.<DecisionResult>lambdaQuery().orderByDesc(DecisionResult::getId);
+        wrapper.eq(DecisionResult::getIsDelete,false);
+
+        Page<DecisionResult> decisionResultPage = decisionResultMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        return Result.success(decisionResultPage);
+    }
+
+
     @GetMapping("/email/send")
-    public Result<?> emailSend(@RequestParam String content) throws Exception {
+    public Result<?> emailSend(@RequestParam String content,@RequestParam String emailAddress) throws Exception {
         EmailMessage emailMessage = new EmailMessage();
-        emailMessage.setContent("我的测试邮件。。。\n嗯嗯啊哈哈");
         if(Strings.isNotBlank(content)){
             content = content.replaceAll("  ", "\n");
             emailMessage.setContent(content);
         }
-        mailUtil.sendEmail(emailMessage,null);
+        mailUtil.sendEmail(emailMessage,emailAddress);
         return Result.success(emailMessage.getContent());
     }
 
